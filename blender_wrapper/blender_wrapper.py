@@ -6,25 +6,13 @@ import os
 import subprocess
 import sys
 from os.path import abspath, dirname
-
-from compipe.exception.general_error import ExceptionError
-from compipe.exception.validate_error import GErrorKeyNotFound
-from compipe.utils.singleton import Singleton
-from compipe.utils.logging import logger
-from compipe.utils.parameters import ARG_EXECUTABLE_TOOLS
-from compipe.runtime_env import Environment as env
-
-EXECUTABLE_NAME = 'blender'
+from .utils.singleton import singleton
+import logging
 
 
-class BlenderWrapper(metaclass=Singleton):
+@singleton
+class BlenderWrapper():
     def __init__(self, blender_path: str = None):
-        blender_env_key = [ARG_EXECUTABLE_TOOLS, EXECUTABLE_NAME]
-
-        if not blender_path and not (blender_path := env().get_value_by_path(keys=blender_env_key)):
-            raise GErrorKeyNotFound(
-                f'Invalid {EXECUTABLE_NAME} executable path')
-
         if not os.path.isfile(blender_path):
             raise FileNotFoundError('Invalid blender executable path')
 
@@ -35,13 +23,14 @@ class BlenderWrapper(metaclass=Singleton):
         if scene_path:
             params.append(f'"{scene_path}"')
         params += ['--python', *args]
-        params.insert(0, os.path.join(self.blender_path, EXECUTABLE_NAME))
-        logger.debug(f'Running command: {EXECUTABLE_NAME}')
-        logger.debug(f'parameters: {params}')
+        params.insert(0, os.path.join(self.blender_path))
+        logging.debug(
+            f'Running command: {os.path.basename(self.blender_path)}')
+        logging.debug(f'parameters: {params}')
         process = subprocess.Popen(' '.join(params), stdout=sys.stdout)
         output, error = process.communicate()
         if process.returncode != 0:
-            raise ExceptionError(error, EXECUTABLE_NAME)
+            raise SystemError(error, os.path.basename(self.blender_path))
 
         return output
 
@@ -62,7 +51,7 @@ def modifier_decimate(file_path: str, output: str = None, decimate_ratio: float 
         decimate_ratio (float, optional): represent the factor of the decimate level. Defaults to 0.4.
     """
     if not (0 < decimate_ratio < 1):
-        logger.debug(
+        logging.debug(
             f'Skip processing the decimate modifier, as the ratio ({decimate_ratio}) is not in the range of [0, 1]')
         return
 
@@ -88,7 +77,7 @@ def blender_modifier(file_path: str, output: str = None, modifiers: list = None)
                                     (i.e. ['decimate,0.2,True,COLLAPSE', 'remesh,SMOOTH,9,True,True', 'smooth,0.3,3'])
     """
     if not modifiers:
-        logger.warning(f'[Blender] Skip batch processing modifiers')
+        logging.warning(f'[Blender] Skip batch processing modifiers')
         return
     output = output or file_path
     param = [os.path.join(dirname(abspath(
@@ -115,7 +104,7 @@ def blender_set_mesh_origin(file_path: str, output: str = None, origin=[0, 0, 0]
     output = output or file_path
 
     if not any(x != 0 for x in origin):
-        logger.warning(f'[Blender] Skip setting new origin to {origin}')
+        logging.warning(f'[Blender] Skip setting new origin to {origin}')
 
     param = [os.path.join(dirname(abspath(
         __file__)), 'blender_set_mesh_origin.py'), '--', f'"{file_path}"', f'"{output}"']
