@@ -46,37 +46,43 @@ class BParams:
         self.load()
 
     def load(self):
+        try:
+            # clean up default cube mesh
+            cube_ob = bpy.data.objects.get('Cube')
+            if cube_ob:
+                bpy.data.objects.remove(cube_ob, do_unlink=True)
 
-        # clean up default cube mesh
-        cube_ob = bpy.data.objects.get('Cube')
-        if cube_ob:
-            bpy.data.objects.remove(cube_ob, do_unlink=True)
+            print(f'Loading file: {self.file_path}')
 
-        if self.ext_name == 'ply':
-            bpy.ops.wm.ply_import(filepath=self.file_path)
-        elif self.ext_name == 'obj':
-            bpy.ops.wm.obj_import(
-                filepath=self.file_path, forward_axis='Y', up_axis='Z')
-        elif self.ext_name == 'fbx':
-            bpy.ops.import_scene.fbx(filepath=self.file_path)
-        elif self.ext_name == 'stl':
-            bpy.ops.import_mesh.stl(
-                filepath=self.file_path, axis_forward='Y', axis_up='Z')
-        elif self.ext_name in ['glb', 'gltf']:
-            bpy.ops.import_scene.gltf(
-                filepath=self.file_path, import_shading='NORMALS')
-        else:
-            print(f'Unsupported file: {self.file_path}')
+            if self.ext_name == 'ply':
+                bpy.ops.wm.ply_import(filepath=self.file_path)
+            elif self.ext_name == 'obj':
+                bpy.ops.wm.obj_import(
+                    filepath=self.file_path, forward_axis='Y', up_axis='Z')
+            elif self.ext_name == 'fbx':
+                bpy.ops.import_scene.fbx(filepath=self.file_path)
+            elif self.ext_name == 'stl':
+                bpy.ops.import_mesh.stl(
+                    filepath=self.file_path, axis_forward='Y', axis_up='Z')
+            elif self.ext_name in ['glb', 'gltf']:
+                bpy.ops.import_scene.gltf(
+                    filepath=self.file_path, import_shading='NORMALS')
+            else:
+                print(f'Unsupported file: {self.file_path}')
+                sys.exit(1)
+            print(f'Loaded file: {self.file_path}')
+
+            # active the imported mesh
+            bpy.ops.object.select_all(action='DESELECT')
+            obj = bpy.data.objects[self.mesh_name]
+            # ensure loaded object data is a single user
+            obj.data = obj.data.copy()
+            obj.select_set(True)
+            bpy.context.view_layer.objects.active = obj
+
+        except Exception as e:
+            print(f'Error: {e}')
             sys.exit(1)
-        print(f'Loaded file: {self.file_path}')
-
-        # active the imported mesh
-        bpy.ops.object.select_all(action='DESELECT')
-        obj = bpy.data.objects[self.mesh_name]
-        # ensure loaded object data is a single user
-        obj.data = obj.data.copy()
-        obj.select_set(True)
-        bpy.context.view_layer.objects.active = obj
 
     def export(self, mesh_name=None):
         """Export the specified mesh to a file.
