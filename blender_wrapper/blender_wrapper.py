@@ -153,8 +153,17 @@ def blender_set_mesh_uvmap(file_path: str, output: str, iterations: int = 12):
     BlenderWrapper().run(*param)
 
 
-def blender_bake_textures(scene_path: str, file_path: str, output: str, material: str,
-                          mode: str, model_scale: float = 1.0, texture_size: int = 512, environment_texture: str = None):
+def blender_bake_textures(
+        scene_path: str,
+        file_path: str,
+        output: str,
+        material: str,
+        mode: str,
+        model_scale: float = 1.0,
+        texture_size: int = 512,
+        environment_texture: str = None,
+        lighting_strength: float = 0.4
+):
     param = [get_script_path('blender_bake_texture'),
              '--',
              f'"{file_path}"',
@@ -163,7 +172,8 @@ def blender_bake_textures(scene_path: str, file_path: str, output: str, material
              mode,
              str(model_scale),
              str(texture_size),
-             environment_texture]
+             environment_texture,
+             str(lighting_strength)]
     BlenderWrapper().run(*param, scene_path=scene_path)
 
 

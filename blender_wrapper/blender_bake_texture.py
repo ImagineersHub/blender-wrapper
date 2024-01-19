@@ -30,6 +30,7 @@ texture_size = int(argv.pop(0))
 environment_texture_path = argv.pop(0)
 bpy.context.scene.world.node_tree.nodes['Environment Texture'].image = bpy.data.images.load(
     environment_texture_path)
+bpy.context.scene.world.node_tree.nodes["Background"].inputs[1].default_value = float(argv.pop(0))
 
 BAKE_MODES = ['DIFFUSE', 'AO', 'SHADOW', 'NORMAL', 'UV', 'ROUGHNESS',
               'EMIT', 'ENVIRONMENT', 'GLOSSY', 'TRANSMISSION', 'COMBINED']
