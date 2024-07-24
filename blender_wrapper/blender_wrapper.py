@@ -23,13 +23,21 @@ SCRIPT_MAPPING = {
     'blender_reconstruct_mesh': 'blender_reconstruct_mesh.py',
     'blender_separate_mesh': 'blender_separate_mesh.py',
     'blender_convert_textured_glb': 'blender_convert_textured_glb.py',
-    'blender_simplify_mesh': 'blender_simplify_mesh.py'
+    'blender_simplify_mesh': 'blender_simplify_mesh.py',
+    'blender_set_sharp_edge': 'blender_set_sharp_edge.py'
 }
 
 
 def get_script_path(script_name: str):
+
     if script_name not in SCRIPT_MAPPING:
-        raise ValueError(f'Invalid script name: {script_name}')
+        script_path = os.path.join(
+            dirname(abspath(__file__)), f'{script_name}.py')
+        if os.path.exists(script_path):
+            return script_path
+        else:
+            raise ValueError(f'Invalid script name: {script_name}')
+
     return os.path.join(dirname(abspath(__file__)), SCRIPT_MAPPING[script_name])
 
 
