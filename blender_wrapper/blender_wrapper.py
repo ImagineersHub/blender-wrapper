@@ -93,6 +93,16 @@ def blender_remove_doubles(file_path: str, output: str = None, is_smooth: bool =
     BlenderWrapper().run(*param)
 
 
+def blender_set_sharp_edge(file_path: str, output: str = None, angle: float = 60):
+    output = output or file_path
+    param = [get_script_path('blender_set_sharp_edge'),
+             '--',
+             f'"{file_path}"',
+             f'"{output}"',
+             str(angle)]
+    BlenderWrapper().run(*param)
+
+
 def blender_modifier(file_path: str, output: str = None, modifiers: list = None):
     """Batch process modifiers.
 
