@@ -47,7 +47,7 @@ def delete_faces_by_distance(obj, distance_threshold):
     bm.normal_update()
 
     # Distance to move the ray origin along the normal (to avoid self-intersection)
-    offset_dist = 1000
+    offset_dist = 0.1
 
     # Lists to keep track of elements to delete
     faces_to_delete = set()
