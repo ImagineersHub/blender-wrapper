@@ -58,8 +58,10 @@ class BlenderWrapper():
         logging.debug(
             f'Running command: {os.path.basename(self.blender_path)}')
         logging.debug(f'parameters: {params}')
-        process = subprocess.Popen(' '.join(params), stdout=sys.stdout)
+        process = subprocess.Popen(
+            ' '.join(params), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         output, error = process.communicate()
+
         if process.returncode != 0:
             raise SystemError(error, os.path.basename(self.blender_path))
 

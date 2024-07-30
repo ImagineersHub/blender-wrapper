@@ -36,18 +36,16 @@ meshes = {}
 # iterate over all the separated meshes
 # remove the mesh if the volume is smaller than the specified threshold
 for index, obj in enumerate(bpy.data.objects):
-    dimension = reduce(lambda x, y: x*y, obj.dimensions)/1000000000  # (cm3 -> m3)
+    dimension = reduce(lambda x, y: x*y, obj.dimensions) / \
+        1000000000  # (cm3 -> m3)
     meshes[obj.name] = dimension
-    # if min_volume_threshold < dimension < max_volume_threshold:
-    #     bpy.data.objects.remove(obj, do_unlink=True)
-    # else:
-    #     meshes[obj.name] = dimension
 
 # convert dimension to ratio
 max_dimension = max(meshes.values())
 
 # sort lists by volume size
-object_context_list = sorted([(k, round(v/max_dimension, 2)) for k, v in meshes.items()], key=lambda item: item[1], reverse=True)
+object_context_list = sorted([(k, round(v/max_dimension, 2))
+                             for k, v in meshes.items()], key=lambda item: item[1], reverse=True)
 
 # ignore the sub meshes if the volume is smaller than the threshold
 exports = {k: v for k, v in object_context_list if v > min_volume_threshold}
@@ -61,7 +59,8 @@ for index, (name, volume_ratio) in enumerate(exports.items()):
     obj = bpy.data.objects[name]
     obj.select_set(True)
     obj.name = f'{param.mesh_name}_{index:02d}'
-    param.export_path = os.path.join(export_dir, f'{obj.name}.{param.export_ext_name}')
+    param.export_path = os.path.join(
+        export_dir, f'{obj.name}.{param.export_ext_name}')
     param.export(mesh_name=obj.name)
     output_config[obj.name] = {
         keys.ARG_PATH: param.export_path,
