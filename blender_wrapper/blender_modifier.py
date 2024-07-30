@@ -16,9 +16,11 @@ param = parse_args()
 
 
 def remesh(mode: str,
-           octree_depth: int,
-           use_smooth_shade: bool,
-           use_remove_disconnected: bool):
+           octree_depth: int = 8,
+           use_smooth_shade: bool = True,
+           use_remove_disconnected: bool = False,
+           voxel_size: float = 0.15,
+           adaptivity: float = 0.1,):
     """Apply blender remesh modifier. And resolve the bumpy surface if needed.
 
     Args:
@@ -49,9 +51,15 @@ def remesh(mode: str,
     modifier = bpy.data.objects[param.mesh_name].modifiers.new(
         name="Remesh", type='REMESH')
     modifier.mode = mode
-    modifier.octree_depth = octree_depth
+
+    if mode == 'SMOOTH':    # Smooth mode
+        modifier.octree_depth = octree_depth
+        modifier.use_remove_disconnected = use_remove_disconnected
+    elif mode == 'VOXEL':   # Voxel mode
+        modifier.voxel_size = voxel_size
+        modifier.adaptivity = adaptivity
+
     modifier.use_smooth_shade = use_smooth_shade
-    modifier.use_remove_disconnected = use_remove_disconnected
     bpy.ops.object.modifier_apply(modifier="Remesh")
 
 
