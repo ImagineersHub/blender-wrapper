@@ -40,9 +40,6 @@ if obj.data.materials:
 else:
     obj.data.materials.append(mat)
 
-# Scale the object down to 0.01 on all axes
-obj.scale = (0.01, 0.01, 0.01)
-
 # Apply the scale transformation
 bpy.ops.object.transform_apply(scale=True)
 
