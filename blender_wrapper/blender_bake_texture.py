@@ -30,7 +30,8 @@ texture_size = int(argv.pop(0))
 environment_texture_path = argv.pop(0)
 bpy.context.scene.world.node_tree.nodes['Environment Texture'].image = bpy.data.images.load(
     environment_texture_path)
-bpy.context.scene.world.node_tree.nodes["Background"].inputs[1].default_value = float(argv.pop(0))
+bpy.context.scene.world.node_tree.nodes["Background"].inputs[1].default_value = float(
+    argv.pop(0))
 
 BAKE_MODES = ['DIFFUSE', 'AO', 'SHADOW', 'NORMAL', 'UV', 'ROUGHNESS',
               'EMIT', 'ENVIRONMENT', 'GLOSSY', 'TRANSMISSION', 'COMBINED']
@@ -60,6 +61,14 @@ else:
     sys.exit(1)
 
 mesh_obj = bpy.data.objects.get(mesh_name)
+
+# set mesh_obj origin to geometry
+mesh_obj.select_set(True)
+bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN', center='BOUNDS')
+
+# set mesh_obj location to (0, 0, 0)
+mesh_obj.location = (0, 0, 0)
+
 bpy.context.view_layer.objects.active = mesh_obj
 
 bpy.ops.object.editmode_toggle()

@@ -8,7 +8,7 @@ import sys
 from os.path import abspath, dirname
 from .utils.singleton import singleton
 import logging
-
+from utils.runtime import is_running_in_jupyter
 
 SCRIPT_MAPPING = {
     'array_objects_by_curve': 'array_objects_by_curve.py',
@@ -58,9 +58,14 @@ class BlenderWrapper():
         logging.debug(
             f'Running command: {os.path.basename(self.blender_path)}')
         logging.debug(f'parameters: {params}')
-        process = subprocess.Popen(
-            ' '.join(params), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        output, error = process.communicate()
+
+        if is_running_in_jupyter():
+            process = subprocess.Popen(
+                ' '.join(params), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            output, error = process.communicate()
+        else:
+            process = subprocess.Popen(' '.join(params), stdout=sys.stdout)
+            output, error = process.communicate()
 
         if process.returncode != 0:
             raise SystemError(error, os.path.basename(self.blender_path))
