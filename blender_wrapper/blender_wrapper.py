@@ -8,7 +8,7 @@ import sys
 from os.path import abspath, dirname
 from .utils.singleton import singleton
 import logging
-from utils.runtime import is_running_in_jupyter
+from .utils.runtime import is_running_in_jupyter
 
 SCRIPT_MAPPING = {
     'array_objects_by_curve': 'array_objects_by_curve.py',
