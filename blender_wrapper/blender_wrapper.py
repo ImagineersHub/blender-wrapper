@@ -187,7 +187,8 @@ def blender_bake_textures(
         model_scale: float = 1.0,
         texture_size: int = 512,
         environment_texture: str = None,
-        lighting_strength: float = 0.4
+        lighting_strength: float = 0.4,
+        output_scene: str = None
 ):
     param = [get_script_path('blender_bake_texture'),
              '--',
@@ -198,7 +199,8 @@ def blender_bake_textures(
              str(model_scale),
              str(texture_size),
              environment_texture,
-             str(lighting_strength)]
+             str(lighting_strength),
+             output_scene]
     BlenderWrapper().run(*param, scene_path=scene_path)
 
 

@@ -23,8 +23,8 @@ with mesh_edit(mesh_name=param.mesh_name) as bm:
     # clear sharp edges
     bpy.ops.mesh.mark_sharp(clear=True)
 
-    # set sharp edges based on the angle
-    bpy.ops.mesh.edges_select_sharp(sharpness=angle)
+    # Set sharpness by angle
+    bpy.ops.mesh.set_sharpness_by_angle(angle=angle)
 
 
 param.export()
