@@ -33,7 +33,7 @@ bpy.context.scene.world.node_tree.nodes['Environment Texture'].image = bpy.data.
 bpy.context.scene.world.node_tree.nodes["Background"].inputs[1].default_value = float(
     argv.pop(0))
 
-output_scene = argv.pop(0)
+output_scene = argv.pop(0) if argv else None
 
 BAKE_MODES = ['DIFFUSE', 'AO', 'SHADOW', 'NORMAL', 'UV', 'ROUGHNESS',
               'EMIT', 'ENVIRONMENT', 'GLOSSY', 'TRANSMISSION', 'COMBINED']
