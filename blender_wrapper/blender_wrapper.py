@@ -188,7 +188,7 @@ def blender_bake_textures(
         texture_size: int = 512,
         environment_texture: str = None,
         lighting_strength: float = 0.4,
-        output_scene: str = None
+        output_scene: str = ''
 ):
     param = [get_script_path('blender_bake_texture'),
              '--',
