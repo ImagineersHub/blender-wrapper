@@ -132,7 +132,7 @@ class BParams:
                 export_normals=True,
                 export_materials='EXPORT',
                 export_copyright='Syngular Technology',
-                export_colors=False,
+                export_all_vertex_colors=False,
                 use_selection=True
             )
         else:
