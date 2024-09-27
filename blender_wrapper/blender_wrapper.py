@@ -139,12 +139,13 @@ def blender_modifier(file_path: str, output: str = None, modifiers: list = None)
     BlenderWrapper().run(*param)
 
 
-def blender_file_converter(file_path: str, output: str = None):
+def blender_file_converter(file_path: str, output: str = None, scale_factor: float = 1.0):
     output = output or file_path
     param = [get_script_path('blender_file_converter'),
              '--',
              f'"{file_path}"',
-             f'"{output}"']
+             f'"{output}"',
+             f'"{scale_factor}"']
     BlenderWrapper().run(*param)
 
 

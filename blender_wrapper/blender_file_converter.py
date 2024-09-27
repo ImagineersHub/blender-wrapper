@@ -10,8 +10,15 @@ from blender_utils.blender_context_manager import mesh_edit  # noqa
 from blender_utils.blender_file_loader import parse_args  # noqa
 
 param = parse_args()
+scale_factor = float(param.argv.pop(0))
 
 print(f'Convert format: {param.file_path} to: {param.export_path}')
+
+"""
+Resize mesh object
+========================================================
+"""
+bpy.ops.transform.resize(value=[scale_factor]*3)
 
 with mesh_edit(mesh_name=param.mesh_name) as bm:
 

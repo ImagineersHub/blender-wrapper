@@ -14,6 +14,9 @@ param = parse_args()
 
 angle = float(param.argv.pop(0))
 
+# convert angle to radian
+angle = angle * 3.14159 / 180
+
 print(f'Apply mesh smooth on: {param.mesh_name}')
 
 with mesh_edit(mesh_name=param.mesh_name) as bm:
