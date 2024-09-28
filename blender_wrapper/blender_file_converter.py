@@ -20,6 +20,10 @@ Resize mesh object
 """
 bpy.ops.transform.resize(value=[scale_factor]*3)
 
+# apply scale transformation
+bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+
 with mesh_edit(mesh_name=param.mesh_name) as bm:
 
     bpy.ops.mesh.select_all(action="SELECT")
