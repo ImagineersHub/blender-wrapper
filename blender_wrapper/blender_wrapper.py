@@ -9,6 +9,7 @@ from os.path import abspath, dirname
 from .utils.singleton import singleton
 import logging
 from .utils.runtime import is_running_in_jupyter
+from typing import List
 
 SCRIPT_MAPPING = {
     'array_objects_by_curve': 'array_objects_by_curve.py',
@@ -24,7 +25,8 @@ SCRIPT_MAPPING = {
     'blender_separate_mesh': 'blender_separate_mesh.py',
     'blender_convert_textured_glb': 'blender_convert_textured_glb.py',
     'blender_simplify_mesh': 'blender_simplify_mesh.py',
-    'blender_set_sharp_edge': 'blender_set_sharp_edge.py'
+    'blender_set_sharp_edge': 'blender_set_sharp_edge.py',
+    'blender_generate_convex_hull': 'blender_generate_convex_hull.py'
 }
 
 
@@ -271,4 +273,12 @@ def blender_simplify_mesh(file_path: str, output: str, threshold: float = 0):
              f'"{file_path}"',
              f'"{output}"',
              str(threshold)]
+    BlenderWrapper().run(*param)
+
+
+def blender_generate_convex_hull(output: str, input_files: List[str]):
+    param = [get_script_path('blender_generate_convex_hull'),
+             '--',
+             f'"{output}"',
+             *input_files]
     BlenderWrapper().run(*param)

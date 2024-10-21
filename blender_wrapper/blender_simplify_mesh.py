@@ -85,6 +85,39 @@ def delete_faces_by_distance(obj, distance_threshold):
     bm.free()
 
 
+def separate_and_keep_largest(obj):
+    # Ensure we're in object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Select the object and make it active
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+
+    # Switch to edit mode
+    bpy.ops.object.mode_set(mode='EDIT')
+
+    # Separate by loose parts
+    bpy.ops.mesh.separate(type='LOOSE')
+
+    # Switch back to object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Find the object with the most triangles
+    separated_objects = bpy.context.selected_objects
+    largest_object = max(
+        separated_objects, key=lambda obj: len(obj.data.polygons))
+
+    # Delete all objects except the largest
+    for obj in separated_objects:
+        if obj != largest_object:
+            bpy.data.objects.remove(obj, do_unlink=True)
+
+    # Select and make active the largest object
+    largest_object.select_set(True)
+    bpy.context.view_layer.objects.active = largest_object
+
+
 def apply_remesh(obj, mode: str = 'SMOOTH', octree_depth: int = 8):
     modifier = obj.modifiers.new(
         name="Remesh", type='REMESH')
@@ -108,5 +141,7 @@ active_obj = bpy.context.active_object
 delete_faces_by_distance(active_obj, distance_threshold)
 
 apply_remesh(active_obj)
+
+separate_and_keep_largest(active_obj)
 
 param.export()
