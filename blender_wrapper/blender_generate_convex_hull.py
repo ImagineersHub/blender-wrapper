@@ -4,7 +4,7 @@ import sys
 
 
 def import_ply(filepath):
-    bpy.ops.import_mesh.ply(filepath=filepath)
+    bpy.ops.wm.ply_import(filepath=filepath)
     return bpy.context.selected_objects[0]
 
 
@@ -21,8 +21,20 @@ def create_convex_hull(obj):
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
-    bpy.ops.object.convex_hull()
-    return bpy.context.active_object
+
+    # Switch to edit mode
+    bpy.ops.object.mode_set(mode='EDIT')
+
+    # Select all vertices
+    bpy.ops.mesh.select_all(action='SELECT')
+
+    # Create convex hull
+    bpy.ops.mesh.convex_hull()
+
+    # Switch back to object mode
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    return obj
 
 
 def simplify_mesh(obj, target_faces):
@@ -39,7 +51,33 @@ def simplify_mesh(obj, target_faces):
 def export_ply(obj, filepath):
     bpy.ops.object.select_all(action='DESELECT')
     obj.select_set(True)
-    bpy.ops.export_mesh.ply(filepath=filepath, use_selection=True)
+    bpy.ops.wm.ply_export(filepath=filepath,
+                          export_selected_objects=True,
+                          export_colors='NONE',
+                          export_normals=True,
+                          export_uv=True,
+                          apply_modifiers=True)
+
+
+def export_obj(obj, filepath):
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    bpy.ops.wm.obj_export(filepath=filepath,
+                          export_selected_objects=True,
+                          apply_modifiers=True,
+                          forward_axis='Y',
+                          export_uv=True,
+                          up_axis='Z')
+
+
+def export_fbx(obj, filepath):
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    bpy.ops.export_scene.fbx(filepath=filepath,
+                             use_selection=True,
+                             use_mesh_modifiers=True,
+                             axis_forward='Y',
+                             axis_up='Z')
 
 
 def main():
@@ -67,8 +105,12 @@ def main():
     # Simplify mesh (adjust target_faces as needed)
     simplified_mesh = simplify_mesh(convex_hull, target_faces=1000)
 
-    # Export as PLY
-    export_ply(simplified_mesh, output_file)
+    # get export file extension
+    _, extension = os.path.splitext(output_file)
+    if extension.lower() == ".fbx":
+        export_fbx(simplified_mesh, output_file)
+    if extension.lower() == ".ply":
+        export_ply(simplified_mesh, output_file)
 
     print(f"Processed mesh exported to {output_file}")
 
