@@ -9,8 +9,12 @@ from os.path import abspath, dirname
 from .utils.singleton import singleton
 import logging
 from .utils.runtime import is_running_in_jupyter
-from typing import List
-
+from typing import List, Callable
+from compipe.runtime_env import Environment as env
+from compipe.utils.parameters import ARG_EXECUTABLE_TOOLS
+from compipe.exception.validate_error import GErrorKeyNotFound
+from compipe.utils.app_invoke_service import (AppInvokeService,
+                                              ProgramExecutionRequest)
 SCRIPT_MAPPING = {
     'array_objects_by_curve': 'array_objects_by_curve.py',
     'blender_modifier_decimate': 'blender_modifier_decimate.py',
@@ -29,6 +33,8 @@ SCRIPT_MAPPING = {
     'blender_generate_convex_hull': 'blender_generate_convex_hull.py'
 }
 
+EXECUTABLE_NAME = 'blender'
+
 
 def get_script_path(script_name: str):
 
@@ -43,45 +49,16 @@ def get_script_path(script_name: str):
     return os.path.join(dirname(abspath(__file__)), SCRIPT_MAPPING[script_name])
 
 
-@singleton
-class BlenderWrapper():
-    def __init__(self, blender_path: str = None):
-        if not os.path.isfile(blender_path):
-            raise FileNotFoundError('Invalid blender executable path')
-
-        self.blender_path = blender_path
-
-    def run(self, *args, scene_path=None):
-        params = list(['--background'])
-        if scene_path:
-            params.append(f'"{scene_path}"')
-        params += ['--python', *args]
-        params.insert(0, os.path.join(self.blender_path))
-        logging.debug(
-            f'Running command: {os.path.basename(self.blender_path)}')
-        logging.debug(f'parameters: {params}')
-
-        if is_running_in_jupyter():
-            process = subprocess.Popen(
-                ' '.join(params), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            output, error = process.communicate()
-        else:
-            process = subprocess.Popen(' '.join(params), stdout=sys.stdout)
-            output, error = process.communicate()
-
-        if process.returncode != 0:
-            raise SystemError(error, os.path.basename(self.blender_path))
-
-        return output
-
-
-def array_objects_by_curve(config_path: str):
+def array_objects_by_curve(func: Callable[..., None],
+                           config_path: str):
     param = [get_script_path('array_objects_by_curve'),
              '--', config_path]
-    BlenderWrapper().run(*param)
+
+    func(*param)
 
 
-def modifier_decimate(file_path: str, output: str = None, decimate_ratio: float = 0.4):
+def modifier_decimate(func: Callable[..., None],
+                      file_path: str, output: str = None, decimate_ratio: float = 0.4):
     """The Decimate modifier allows you to reduce the vertex/face count
     of a mesh with minimal shape changes.
 
@@ -97,30 +74,33 @@ def modifier_decimate(file_path: str, output: str = None, decimate_ratio: float 
 
     param = [get_script_path('blender_modifier_decimate'),
              '--', file_path, output or file_path, str(decimate_ratio)]
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_remove_doubles(file_path: str, output: str = None, is_smooth: bool = True):
+def blender_remove_doubles(func: Callable[..., None],
+                           file_path: str, output: str = None, is_smooth: bool = True):
     output = output or file_path
     param = [get_script_path('blender_remove_doubles'),
              '--',
              f'"{file_path}"',
              f'"{output}"',
              str(is_smooth)]
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_set_sharp_edge(file_path: str, output: str = None, angle: float = 60):
+def blender_set_sharp_edge(func: Callable[..., None],
+                           file_path: str, output: str = None, angle: float = 60):
     output = output or file_path
     param = [get_script_path('blender_set_sharp_edge'),
              '--',
              f'"{file_path}"',
              f'"{output}"',
              str(angle)]
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_modifier(file_path: str, output: str = None, modifiers: list = None):
+def blender_modifier(func: Callable[..., None],
+                     file_path: str, output: str = None, modifiers: list = None):
     """Batch process modifiers.
 
     Args:
@@ -138,20 +118,22 @@ def blender_modifier(file_path: str, output: str = None, modifiers: list = None)
              f'"{file_path}"',
              f'"{output}"']
     param += modifiers
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_file_converter(file_path: str, output: str = None, scale_factor: float = 1.0):
+def blender_file_converter(func: Callable[..., None],
+                           file_path: str, output: str = None, scale_factor: float = 1.0):
     output = output or file_path
     param = [get_script_path('blender_file_converter'),
              '--',
              f'"{file_path}"',
              f'"{output}"',
              f'"{scale_factor}"']
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_set_mesh_origin(file_path: str, output: str = None, origin=[0, 0, 0]):
+def blender_set_mesh_origin(func: Callable[..., None],
+                            file_path: str, output: str = None, origin=[0, 0, 0]):
     """Set new origin by moving vertex positions.
 
     Args:
@@ -169,19 +151,21 @@ def blender_set_mesh_origin(file_path: str, output: str = None, origin=[0, 0, 0]
              f'"{file_path}"',
              f'"{output}"']
     param += list(map(lambda x: str(x), origin))
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_set_mesh_uvmap(file_path: str, output: str, iterations: int = 12):
+def blender_set_mesh_uvmap(func: Callable[..., None],
+                           file_path: str, output: str, iterations: int = 12):
     param = [get_script_path('blender_set_mesh_uvmap'),
              '--',
              f'"{file_path}"',
              f'"{output}"',
              str(iterations)]
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
 def blender_bake_textures(
+        func: Callable[..., None],
         scene_path: str,
         file_path: str,
         output: str,
@@ -204,28 +188,33 @@ def blender_bake_textures(
              environment_texture,
              str(lighting_strength),
              output_scene]
-    BlenderWrapper().run(*param, scene_path=scene_path)
+    func(*param, scene_path=scene_path)
 
 
-def blender_resolve_bumpy_surface(file_path: str, output: str = None):
+def blender_resolve_bumpy_surface(func: Callable[..., None],
+                                  file_path: str, output: str = None):
     output = output or file_path
     param = [get_script_path('blender_resolve_bumpy_surface'),
              '--',
              f'"{file_path}"',
              f'"{output}"']
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_reconstruct_mesh(file_path: str, output: str = None):
+def blender_reconstruct_mesh(func: Callable[..., None],
+                             file_path: str, output: str = None):
     output = output or file_path
     param = [get_script_path('blender_reconstruct_mesh'),
              '--',
              f'"{file_path}"',
              f'"{output}"']
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_separate_mesh(file_path: str, output: str = None, min_volume_threshold: int = 0.0001):
+def blender_separate_mesh(func: Callable[..., None],
+                          file_path: str,
+                          output: str = None,
+                          min_volume_threshold: int = 0.0001):
     """_summary_
 
     Args:
@@ -252,11 +241,11 @@ def blender_separate_mesh(file_path: str, output: str = None, min_volume_thresho
              f'"{output}"',
              output_config_path,
              str(min_volume_threshold)]
-    BlenderWrapper().run(*param)
+    func(*param)
     return json.load(open(output_config_path))
 
 
-def blender_export_textured_glb(file_path: str, output: str, texture: str):
+def blender_export_textured_glb(func: Callable[..., None], file_path: str, output: str, texture: str):
     if output[-3:].lower() != 'glb':
         raise ValueError(f"Output path is not GLB format.")
     param = [get_script_path('blender_convert_textured_glb'),
@@ -264,21 +253,21 @@ def blender_export_textured_glb(file_path: str, output: str, texture: str):
              f'"{file_path}"',
              f'"{output}"',
              f'"{texture}"']
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_simplify_mesh(file_path: str, output: str, threshold: float = 0):
+def blender_simplify_mesh(func: Callable[..., None], file_path: str, output: str, threshold: float = 0):
     param = [get_script_path('blender_simplify_mesh'),
              '--',
              f'"{file_path}"',
              f'"{output}"',
              str(threshold)]
-    BlenderWrapper().run(*param)
+    func(*param)
 
 
-def blender_generate_convex_hull(output: str, input_files: List[str]):
+def blender_generate_convex_hull(func: Callable[..., None], output: str, input_files: List[str]):
     param = [get_script_path('blender_generate_convex_hull'),
              '--',
              f'"{output}"',
              *input_files]
-    BlenderWrapper().run(*param)
+    func(*param)
