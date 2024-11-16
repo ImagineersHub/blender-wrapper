@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='blender_wrapper',         # How you named your package folder (MyLib)
     # Start with a small number and increase it with every change you make
-    version='0.1.22',
+    version='0.1.23',
     # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     license='MIT',
     # Give a short description about your library
@@ -27,7 +27,7 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',   # Again, pick a license
-        # Specify which pyhton versions that you want to support
+        # Specify which python versions that you want to support
         'Programming Language :: Python :: 3.10',
     ],
 )
