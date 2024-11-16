@@ -1,7 +1,6 @@
 import os
 
-from blender_wrapper.blender_wrapper import (SCRIPT_MAPPING, BlenderWrapper,
-                                             get_script_path)
+from blender_wrapper.blender_wrapper import get_script_path
 
 
 def test_script_mapping():
